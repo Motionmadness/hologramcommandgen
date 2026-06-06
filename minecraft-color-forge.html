@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MC Color Forge — Minecraft Color & Gradient Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #080a0d;
+  --bg1:     #0e1117;
+  --bg2:     #141920;
+  --bg3:     #1c2330;
+  --panel:   #181e28;
+  --panel2:  #1f2736;
+  --border:  #252f3e;
+  --border2: #2e3d52;
+  --border3: #3a4e66;
+  --text:    #d0dcea;
+  --text2:   #7890aa;
+  --text3:   #445566;
+  --accent:  #3effa0;
+  --accent2: #00cc6a;
+  --gold:    #ffc84a;
+  --red:     #ff5f6d;
+  --blue:    #4db8ff;
+  --purple:  #b07cff;
+  --pink:    #ff6fd8;
+  --mono: 'JetBrains Mono', monospace;
+  --pixel: 'Press Start 2P', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden}
+
+/* ─── BG TEXTURE ─── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(62,255,160,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(62,255,160,.025) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;z-index:0
+}
+body::after{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.04) 3px,rgba(0,0,0,.04) 4px);
+  pointer-events:none;z-index:0
+}
+
+/* ─── HEADER ─── */
+header{
+  position:sticky;top:0;z-index:200;
+  display:flex;align-items:center;gap:16px;
+  padding:0 32px;height:60px;
+  background:rgba(8,10,13,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border2);
+}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-icon{
+  width:36px;height:36px;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+  gap:2px;background:var(--bg2);padding:3px;flex-shrink:0
+}
+.logo-icon span{display:block;border-radius:1px}
+.logo-text{font-family:var(--pixel);font-size:11px;color:var(--accent);text-shadow:0 0 16px rgba(62,255,160,.5);letter-spacing:.5px}
+nav{margin-left:auto;display:flex;gap:4px}
+.nav-pill{
+  font-size:11px;letter-spacing:1.5px;padding:5px 14px;
+  border:1px solid var(--border2);background:transparent;
+  color:var(--text2);cursor:pointer;transition:all .15s;text-decoration:none;
+  font-family:var(--mono)
+}
+.nav-pill:hover,.nav-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(62,255,160,.05)}
+.menu-toggle{display:none;background:none;border:1px solid var(--border2);color:var(--text2);padding:5px 10px;cursor:pointer;font-size:16px;font-family:var(--mono)}
+
+/* ─── LAYOUT ─── */
+main{position:relative;z-index:10;max-width:1180px;margin:0 auto;padding:36px 20px 100px}
+
+/* ─── SECTION HEADS ─── */
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.sec-num{font-family:var(--pixel);font-size:8px;color:var(--text3);letter-spacing:2px}
+.sec-title{font-family:var(--pixel);font-size:10px;color:var(--accent);letter-spacing:2px}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border2),transparent)}
+.badge{font-size:9px;padding:2px 8px;border:1px solid;letter-spacing:1px;font-family:var(--mono)}
+.badge-green{border-color:var(--accent2);color:var(--accent2)}
+.badge-purple{border-color:var(--purple);color:var(--purple)}
+.badge-gold{border-color:var(--gold);color:var(--gold)}
+.badge-blue{border-color:var(--blue);color:var(--blue)}
+
+/* ─── CARD BASE ─── */
+.card{
+  background:var(--panel);border:1px solid var(--border2);
+  padding:24px;margin-bottom:32px;position:relative;
+}
+.card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent)
+}
+.card.purple-top::before{background:linear-gradient(90deg,transparent,var(--purple),var(--blue),transparent)}
+.card.gold-top::before{background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+/* ─── LABELS ─── */
+.lbl{font-size:9px;letter-spacing:2px;color:var(--text3);margin-bottom:7px;display:block;text-transform:uppercase}
+
+/* ─── INPUTS ─── */
+input[type=text],textarea{
+  width:100%;background:var(--bg2);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--mono);font-size:13px;
+  padding:11px 14px;outline:none;transition:border-color .18s;
+}
+input[type=text]:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(62,255,160,.1)}
+textarea{resize:vertical;min-height:80px;line-height:1.6}
+
+/* ─── BUTTONS ─── */
+.btn{
+  font-family:var(--mono);font-size:11px;letter-spacing:1.5px;
+  padding:8px 18px;border:1px solid var(--border2);background:var(--bg2);
+  color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap
+}
+.btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(62,255,160,.05)}
+.btn.active,.btn:active{border-color:var(--accent2);color:var(--accent2);background:rgba(62,255,160,.1)}
+.btn-primary{border-color:var(--accent2);color:var(--accent2);background:rgba(62,255,160,.07)}
+.btn-primary:hover{background:rgba(62,255,160,.14)}
+.btn-danger{border-color:var(--red)!important;color:var(--red)!important}
+.btn-danger:hover{background:rgba(255,95,109,.1)!important}
+
+/* ─── TEXT GENERATOR ─── */
+.gen-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:780px){.gen-grid{grid-template-columns:1fr}}
+
+/* Quick buttons */
+.qbar{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.qbtn{
+  font-family:var(--mono);font-size:10px;
+  padding:4px 9px;border:1px solid var(--border);background:var(--bg1);
+  color:var(--text2);cursor:pointer;transition:all .12s;
+  display:inline-flex;align-items:center;gap:5px;line-height:1;
+}
+.qbtn:hover{border-color:var(--border3);color:var(--text);background:var(--bg2)}
+.qbtn .swatch{width:9px;height:9px;flex-shrink:0;box-shadow:inset -1px -1px 0 rgba(0,0,0,.4)}
+.qbar-divider{width:1px;background:var(--border2);margin:0 2px;align-self:stretch}
+
+/* Preview tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border2);margin-bottom:0}
+.tab{
+  font-family:var(--mono);font-size:10px;letter-spacing:1.5px;
+  padding:7px 16px;border:1px solid transparent;border-bottom:none;
+  background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;margin-bottom:-1px
+}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--accent);border-color:var(--border2);background:var(--bg2);border-bottom-color:var(--bg2)}
+
+.tab-pane{
+  background:var(--bg2);border:1px solid var(--border2);border-top:none;
+  min-height:80px;display:none;padding:16px 18px;font-family:var(--mono);font-size:14px;line-height:1.7
+}
+.tab-pane.active{display:flex;align-items:flex-start}
+.tab-pane.center{align-items:center;justify-content:center}
+
+/* Sign preview */
+.sign-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.sign-post{width:10px;height:40px;background:linear-gradient(90deg,#6b4f1a,#8b6914,#6b4f1a)}
+.sign-board{background:linear-gradient(180deg,#c49b3c,#a8822e);padding:3px;box-shadow:3px 3px 0 #3d2d00,inset 1px 1px 0 rgba(255,255,255,.2),-1px -1px 0 rgba(0,0,0,.3)}
+.sign-inner{background:linear-gradient(135deg,#c8a240,#b89030);width:220px;height:70px;display:flex;align-items:center;justify-content:center;padding:8px;font-size:12px;text-align:center;word-break:break-all}
+
+/* MOTD */
+.motd-frame{
+  background:#1a1a2e;border:2px solid #222;padding:12px 16px;
+  width:100%;font-size:12.5px;min-height:50px
+}
+.motd-meta{font-size:10px;color:#666;margin-bottom:6px;font-family:var(--mono)}
+
+/* Output boxes */
+.output-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+@media(max-width:640px){.output-grid{grid-template-columns:1fr}}
+.out-box{background:var(--bg1);border:1px solid var(--border);padding:12px 14px 12px 14px;position:relative;min-height:56px}
+.out-box .lbl{margin-bottom:5px}
+.out-code{font-family:var(--mono);font-size:11px;color:var(--gold);word-break:break-all;line-height:1.55;padding-right:52px;white-space:pre-wrap}
+.copy-btn{
+  position:absolute;top:10px;right:10px;
+  font-family:var(--mono);font-size:9px;letter-spacing:1.5px;
+  padding:4px 9px;border:1px solid var(--border2);background:var(--bg2);
+  color:var(--text3);cursor:pointer;transition:all .15s
+}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn.ok{border-color:var(--accent2);color:var(--accent2)}
+
+/* ─── GRADIENT DESIGNER ─── */
+/* Gradient bar with draggable stops */
+.grad-bar-wrap{
+  position:relative;margin:24px 0 8px;
+  user-select:none;-webkit-user-select:none
+}
+.grad-bar{
+  height:48px;border:1px solid var(--border2);
+  cursor:crosshair;position:relative;overflow:hidden
+}
+.grad-bar-bg{
+  position:absolute;inset:0;
+  background:repeating-conic-gradient(#333 0% 25%,#222 0% 50%) 0 0/16px 16px
+}
+.grad-bar-fg{position:absolute;inset:0;transition:background .1s}
+
+/* Stop handles on the track below the bar */
+.stop-track{
+  position:relative;height:28px;margin-top:0;
+  border-left:1px solid var(--border);border-right:1px solid var(--border)
+}
+.stop-handle{
+  position:absolute;top:4px;
+  width:20px;height:20px;
+  transform:translateX(-50%);
+  cursor:grab;z-index:10;
+  border:2px solid #fff;
+  box-shadow:0 0 0 1px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.5);
+  transition:transform .1s,box-shadow .1s;
+}
+.stop-handle:active{cursor:grabbing;transform:translateX(-50%) scale(1.15);box-shadow:0 0 0 2px var(--accent),0 2px 10px rgba(0,0,0,.6)}
+.stop-handle.selected{box-shadow:0 0 0 2px var(--accent),0 2px 8px rgba(0,0,0,.5)}
+
+/* Selected stop editor */
+.stop-editor{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 14px;background:var(--bg1);border:1px solid var(--border2);
+  border-top:none;min-height:52px
+}
+.stop-editor.hidden{display:none}
+.stop-color-swatch{
+  width:36px;height:36px;border:2px solid var(--border3);cursor:pointer;flex-shrink:0;position:relative;overflow:hidden
+}
+.stop-color-swatch input[type=color]{
+  position:absolute;inset:0;width:100%;height:100%;
+  opacity:0;cursor:pointer;padding:0;border:none
+}
+.stop-hex-input{
+  width:96px;background:var(--bg2);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--mono);font-size:12px;
+  padding:7px 10px;outline:none;text-transform:uppercase
+}
+.stop-hex-input:focus{border-color:var(--accent)}
+.stop-pos-input{
+  width:70px;background:var(--bg2);border:1px solid var(--border2);
+  color:var(--text);font-family:var(--mono);font-size:12px;
+  padding:7px 10px;outline:none
+}
+.stop-pos-input:focus{border-color:var(--accent)}
+.stop-editor-label{font-size:10px;color:var(--text3);letter-spacing:1px}
+
+/* Presets */
+.presets-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.preset-btn{
+  height:28px;min-width:80px;border:1px solid var(--border2);cursor:pointer;
+  transition:border-color .15s,transform .1s;flex:1;max-width:140px
+}
+.preset-btn:hover{border-color:var(--accent);transform:scaleY(1.08)}
+
+/* Extra gradient options */
+.grad-options{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:14px 0}
+.toggle-group{display:flex;gap:0}
+.toggle-opt{
+  font-family:var(--mono);font-size:10px;letter-spacing:1px;
+  padding:5px 12px;border:1px solid var(--border2);background:var(--bg1);
+  color:var(--text3);cursor:pointer;transition:all .12s
+}
+.toggle-opt:not(:last-child){border-right:none}
+.toggle-opt.active{background:rgba(62,255,160,.08);color:var(--accent);border-color:var(--accent2)}
+
+/* Big text preview */
+.grad-text-preview{
+  font-family:var(--mono);font-size:28px;font-weight:700;
+  letter-spacing:2px;text-align:center;padding:16px 12px;
+  min-height:72px;background:var(--bg1);border:1px solid var(--border2);
+  margin-bottom:16px;word-break:break-all;line-height:1.3
+}
+.grad-text-input{font-size:15px;margin-bottom:12px}
+
+/* Gradient output grid */
+.grad-out-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:860px){.grad-out-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.grad-out-grid{grid-template-columns:1fr}}
+
+/* ─── COLOR TABLE ─── */
+.color-search-row{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.color-search-row input{flex:1;max-width:280px}
+.colors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.color-card{
+  background:var(--panel);border:1px solid var(--border);
+  padding:10px 12px;display:flex;align-items:center;gap:10px;
+  cursor:default;transition:border-color .12s,background .12s
+}
+.color-card:hover{border-color:var(--border3);background:var(--panel2)}
+.color-swatch{
+  width:26px;height:26px;flex-shrink:0;
+  box-shadow:inset -2px -2px 0 rgba(0,0,0,.35),inset 1px 1px 0 rgba(255,255,255,.15)
+}
+.color-info{flex:1;min-width:0}
+.color-name{font-size:11px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.code-pills{display:flex;gap:4px;flex-wrap:wrap}
+.pill{
+  font-family:var(--mono);font-size:9px;
+  padding:2px 6px;border:1px solid var(--border);
+  background:var(--bg1);color:var(--text3);cursor:pointer;
+  transition:all .1s;letter-spacing:.5px
+}
+.pill:hover{color:var(--gold);border-color:var(--gold);background:rgba(255,200,74,.06)}
+
+/* ─── FORMAT TABLE ─── */
+.fmt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.fmt-card{
+  background:var(--panel);border:1px solid var(--border);
+  padding:12px 14px;display:flex;align-items:center;gap:12px;
+  transition:border-color .12s,background .12s
+}
+.fmt-card:hover{border-color:var(--border3);background:var(--panel2)}
+.fmt-icon{
+  width:42px;height:42px;flex-shrink:0;background:var(--bg2);
+  border:1px solid var(--border2);display:flex;align-items:center;
+  justify-content:center;font-size:17px;color:#fff;font-family:var(--mono)
+}
+.fmt-info{flex:1}
+.fmt-name{font-size:11px;font-weight:700;margin-bottom:4px}
+.fmt-desc{font-size:9px;color:var(--text3);margin-top:4px;line-height:1.5}
+
+/* ─── TOOLTIP ─── */
+.tooltip-wrap{position:relative;display:inline-block}
+.tooltip-wrap:hover .tooltip{opacity:1;transform:translateY(0)}
+.tooltip{
+  position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%) translateY(4px);
+  background:var(--panel2);border:1px solid var(--border2);padding:5px 10px;
+  font-size:10px;color:var(--text);white-space:nowrap;pointer-events:none;
+  opacity:0;transition:all .15s;z-index:100;letter-spacing:.5px
+}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:9999;
+  background:var(--accent);color:#060e0a;font-family:var(--mono);
+  font-size:10px;font-weight:700;letter-spacing:2px;
+  padding:10px 20px;opacity:0;transform:translateY(8px);
+  transition:all .2s;pointer-events:none
+}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.error{background:var(--red);color:#fff}
+
+/* ─── MOBILE NAV ─── */
+#mobile-nav{
+  display:none;position:fixed;top:60px;right:0;left:0;z-index:190;
+  background:rgba(8,10,13,.97);border-bottom:1px solid var(--border2);
+  padding:12px 20px;flex-direction:column;gap:6px
+}
+#mobile-nav.open{display:flex}
+#mobile-nav .nav-pill{text-align:center;padding:10px}
+
+/* obfuscated */
+@keyframes mc-obf{0%,100%{opacity:1}50%{opacity:.15}}
+.mc-obf{animation:mc-obf .08s infinite}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:600px){
+  header{padding:0 16px}
+  .logo-text{font-size:9px}
+  nav{display:none}
+  .menu-toggle{display:block}
+  main{padding:24px 12px 80px}
+  .card{padding:16px}
+}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--border2)}
+::-webkit-scrollbar-thumb:hover{background:var(--border3)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <span style="background:#3effa0"></span><span style="background:#4db8ff"></span><span style="background:#b07cff"></span>
+      <span style="background:#ffc84a"></span><span style="background:#ff6fd8"></span><span style="background:#ff5f6d"></span>
+      <span style="background:#3effa0"></span><span style="background:#ffc84a"></span><span style="background:#4db8ff"></span>
+    </div>
+    <span class="logo-text">MC COLOR FORGE</span>
+  </a>
+  <nav id="main-nav">
+    <a class="nav-pill active" href="#text-gen">Generator</a>
+    <a class="nav-pill" href="#grad-design">Gradients</a>
+    <a class="nav-pill" href="#color-ref">Colors</a>
+    <a class="nav-pill" href="#fmt-ref">Formatting</a>
+  </nav>
+  <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">☰</button>
+</header>
+<div id="mobile-nav">
+  <a class="nav-pill" href="#text-gen" onclick="toggleMenu()">Generator</a>
+  <a class="nav-pill" href="#grad-design" onclick="toggleMenu()">Gradients</a>
+  <a class="nav-pill" href="#color-ref" onclick="toggleMenu()">Colors</a>
+  <a class="nav-pill" href="#fmt-ref" onclick="toggleMenu()">Formatting</a>
+</div>
+
+<main>
+
+<!-- ══════════════════════════════════════════
+     01 — TEXT GENERATOR
+════════════════════════════════════════════ -->
+<section id="text-gen">
+  <div class="sec-head">
+    <span class="sec-num">01</span>
+    <span class="sec-title">Text Generator</span>
+    <div class="sec-line"></div>
+    <span class="badge badge-green">LIVE PREVIEW</span>
+  </div>
+
+  <div class="card">
+    <div class="gen-grid">
+      <!-- LEFT: input -->
+      <div>
+        <label class="lbl">Your text — use &amp;codes, §codes, or &lt;#hex&gt;text&lt;/#hex&gt;</label>
+        <textarea id="mainInput" placeholder="&aHello &bWorld&r! &#10;&lBold &oItalic &mStrike&r &#10;<#ff0055>Gradient</#00ccff> text" spellcheck="false"></textarea>
+
+        <div style="margin-top:10px">
+          <label class="lbl">Quick insert — click to add at cursor</label>
+          <div class="qbar" id="qbar-colors"></div>
+          <div class="qbar" style="margin-top:5px" id="qbar-fmt"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: preview -->
+      <div>
+        <label class="lbl">Preview</label>
+        <div class="tabs">
+          <button class="tab active" data-pane="p-chat">Chat</button>
+          <button class="tab" data-pane="p-sign">Sign</button>
+          <button class="tab" data-pane="p-motd">MOTD</button>
+          <button class="tab" data-pane="p-raw">Raw</button>
+        </div>
+        <div id="p-chat" class="tab-pane active">
+          <div style="display:flex;flex-direction:column;gap:2px;width:100%">
+            <div style="display:flex;gap:8px;align-items:baseline">
+              <span style="color:#aaa;font-size:12px">&lt;Player&gt;</span>
+              <span id="prev-chat" style="font-size:13px"></span>
+            </div>
+          </div>
+        </div>
+        <div id="p-sign" class="tab-pane center">
+          <div class="sign-wrap">
+            <div class="sign-board"><div class="sign-inner" id="prev-sign"></div></div>
+            <div class="sign-post"></div>
+          </div>
+        </div>
+        <div id="p-motd" class="tab-pane" style="padding:0">
+          <div class="motd-frame">
+            <div class="motd-meta">▶ Minecraft Server ─ 17/240 ● online</div>
+            <div id="prev-motd"></div>
+          </div>
+        </div>
+        <div id="p-raw" class="tab-pane" style="flex-direction:column;gap:4px">
+          <span class="lbl" style="margin-bottom:0">Raw input</span>
+          <pre id="prev-raw" style="font-size:11px;color:var(--text2);white-space:pre-wrap;word-break:break-all"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- outputs -->
+    <div class="output-grid">
+      <div class="out-box">
+        <span class="lbl">Section (§) format</span>
+        <div class="out-code" id="out-section"></div>
+        <button class="copy-btn" onclick="doCopy('out-section',this)">COPY</button>
+      </div>
+      <div class="out-box">
+        <span class="lbl">Ampersand (&amp;) format</span>
+        <div class="out-code" id="out-amp"></div>
+        <button class="copy-btn" onclick="doCopy('out-amp',this)">COPY</button>
+      </div>
+      <div class="out-box">
+        <span class="lbl">DecentHolograms format</span>
+        <div class="out-code" id="out-dh"></div>
+        <button class="copy-btn" onclick="doCopy('out-dh',this)">COPY</button>
+      </div>
+      <div class="out-box">
+        <span class="lbl">/tellraw JSON command</span>
+        <div class="out-code" id="out-tellraw"></div>
+        <button class="copy-btn" onclick="doCopy('out-tellraw',this)">COPY</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     02 — GRADIENT DESIGNER
+════════════════════════════════════════════ -->
+<section id="grad-design">
+  <div class="sec-head">
+    <span class="sec-num">02</span>
+    <span class="sec-title">Gradient Designer</span>
+    <div class="sec-line"></div>
+    <span class="badge badge-purple">DecentHolograms</span>
+    <span class="badge badge-blue">MiniMessage</span>
+  </div>
+
+  <div class="card purple-top">
+
+    <!-- Presets -->
+    <label class="lbl">Presets — click to load</label>
+    <div class="presets-row" id="preset-row"></div>
+
+    <!-- Gradient text -->
+    <label class="lbl">Gradient text</label>
+    <input type="text" class="grad-text-input" id="gradText" value="MC Color Forge" placeholder="Type your text…">
+
+    <!-- Big preview -->
+    <div class="grad-text-preview" id="gradBigPrev"></div>
+
+    <!-- Gradient bar -->
+    <label class="lbl">Gradient bar — <span style="color:var(--text2)">drag stops · click bar to add · right-click stop to remove</span></label>
+    <div class="grad-bar-wrap">
+      <div class="grad-bar" id="gradBar">
+        <div class="grad-bar-bg"></div>
+        <div class="grad-bar-fg" id="gradBarFg"></div>
+      </div>
+      <div class="stop-track" id="stopTrack"></div>
+    </div>
+
+    <!-- Selected stop editor -->
+    <div class="stop-editor" id="stopEditor">
+      <div class="stop-color-swatch" id="stopSwatch" title="Click to open color picker">
+        <input type="color" id="stopColorPicker" oninput="onPickerChange(this.value)">
+      </div>
+      <div>
+        <div class="stop-editor-label" style="margin-bottom:4px">HEX</div>
+        <input class="stop-hex-input" id="stopHexInput" type="text" maxlength="7" placeholder="#FF0000" oninput="onHexInput(this.value)" onblur="onHexBlur(this.value)">
+      </div>
+      <div>
+        <div class="stop-editor-label" style="margin-bottom:4px">POSITION %</div>
+        <input class="stop-pos-input" id="stopPosInput" type="number" min="0" max="100" step="1" oninput="onPosInput(this.value)">
+      </div>
+      <button class="btn btn-danger" id="stopDelBtn" onclick="deleteSelectedStop()" style="margin-left:auto">✕ Remove stop</button>
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-top:6px;letter-spacing:1px">Click the gradient bar to add a stop. Click a stop handle to select it. Right-click a handle to delete.</div>
+
+    <!-- Options row -->
+    <div class="grad-options">
+      <div>
+        <label class="lbl" style="margin-bottom:5px">Interpolation</label>
+        <div class="toggle-group" id="interp-toggle">
+          <button class="toggle-opt active" data-val="linear" onclick="setInterp(this)">Linear</button>
+          <button class="toggle-opt" data-val="ease" onclick="setInterp(this)">Ease</button>
+          <button class="toggle-opt" data-val="cosine" onclick="setInterp(this)">Cosine</button>
+        </div>
+      </div>
+      <div>
+        <label class="lbl" style="margin-bottom:5px">Apply formatting</label>
+        <div class="toggle-group" id="fmt-toggle">
+          <button class="toggle-opt active" data-val="" onclick="setGradFmt(this)" title="None">None</button>
+          <button class="toggle-opt" data-val="&l" onclick="setGradFmt(this)" title="Bold"><b>B</b></button>
+          <button class="toggle-opt" data-val="&o" onclick="setGradFmt(this)" title="Italic"><i>I</i></button>
+          <button class="toggle-opt" data-val="&n" onclick="setGradFmt(this)" title="Underline"><u>U</u></button>
+        </div>
+      </div>
+      <div>
+        <label class="lbl" style="margin-bottom:5px">Reverse</label>
+        <button class="btn" id="reverseBtn" onclick="reverseGradient()">⇄ Reverse</button>
+      </div>
+      <div>
+        <label class="lbl" style="margin-bottom:5px">Add random stop</label>
+        <button class="btn" onclick="addRandomStop()">+ Random</button>
+      </div>
+      <div>
+        <label class="lbl" style="margin-bottom:5px">Reset</label>
+        <button class="btn btn-danger" onclick="resetGradient()">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- Outputs -->
+    <label class="lbl" style="margin-top:4px">Output formats</label>
+    <div class="grad-out-grid">
+      <div class="out-box">
+        <span class="lbl">DecentHolograms</span>
+        <div class="out-code" id="gout-dh"></div>
+        <button class="copy-btn" onclick="doCopy('gout-dh',this)">COPY</button>
+      </div>
+      <div class="out-box">
+        <span class="lbl">MiniMessage / Adventure</span>
+        <div class="out-code" id="gout-mm"></div>
+        <button class="copy-btn" onclick="doCopy('gout-mm',this)">COPY</button>
+      </div>
+      <div class="out-box">
+        <span class="lbl">§x§R§R§G§G§B§B (1.16+)</span>
+        <div class="out-code" id="gout-char"></div>
+        <button class="copy-btn" onclick="doCopy('gout-char',this)">COPY</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     03 — COLOR REFERENCE
+════════════════════════════════════════════ -->
+<section id="color-ref">
+  <div class="sec-head">
+    <span class="sec-num">03</span>
+    <span class="sec-title">Color Codes</span>
+    <div class="sec-line"></div>
+    <span class="badge badge-green">16 + Minecoin</span>
+  </div>
+  <div class="color-search-row">
+    <input type="text" id="colorSearch" placeholder="Search by name or code…" oninput="filterColors()">
+    <span style="font-size:10px;color:var(--text3);letter-spacing:1px">Click any pill to insert or copy</span>
+  </div>
+  <div class="colors-grid" id="colors-grid"></div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     04 — FORMATTING REFERENCE
+════════════════════════════════════════════ -->
+<section id="fmt-ref" style="margin-top:32px">
+  <div class="sec-head">
+    <span class="sec-num">04</span>
+    <span class="sec-title">Formatting Codes</span>
+    <div class="sec-line"></div>
+  </div>
+  <div class="fmt-grid" id="fmt-grid"></div>
+</section>
+
+</main>
+
+<div id="toast">COPIED!</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const MC_COLORS = [
+  {name:'Black',       code:'0',hex:'#000000'},
+  {name:'Dark Blue',   code:'1',hex:'#0000AA'},
+  {name:'Dark Green',  code:'2',hex:'#00AA00'},
+  {name:'Dark Aqua',   code:'3',hex:'#00AAAA'},
+  {name:'Dark Red',    code:'4',hex:'#AA0000'},
+  {name:'Dark Purple', code:'5',hex:'#AA00AA'},
+  {name:'Gold',        code:'6',hex:'#FFAA00'},
+  {name:'Gray',        code:'7',hex:'#AAAAAA'},
+  {name:'Dark Gray',   code:'8',hex:'#555555'},
+  {name:'Blue',        code:'9',hex:'#5555FF'},
+  {name:'Green',       code:'a',hex:'#55FF55'},
+  {name:'Aqua',        code:'b',hex:'#55FFFF'},
+  {name:'Red',         code:'c',hex:'#FF5555'},
+  {name:'Light Purple',code:'d',hex:'#FF55FF'},
+  {name:'Yellow',      code:'e',hex:'#FFFF55'},
+  {name:'White',       code:'f',hex:'#FFFFFF'},
+  {name:'Minecoin Gold',code:'g',hex:'#DDD605'},
+];
+const MC_FMTS = [
+  {name:'Obfuscated',   code:'k',css:'animation:mc-obf .08s infinite',     desc:'Randomizes chars rapidly'},
+  {name:'Bold',         code:'l',css:'font-weight:800',                     desc:'Heavy, thick text'},
+  {name:'Strikethrough',code:'m',css:'text-decoration:line-through',        desc:'Line through the text'},
+  {name:'Underline',    code:'n',css:'text-decoration:underline',           desc:'Line under the text'},
+  {name:'Italic',       code:'o',css:'font-style:italic',                   desc:'Slants text right'},
+  {name:'Reset',        code:'r',css:'',                                    desc:'Removes all color & format'},
+];
+const CODE_HEX = {};
+MC_COLORS.forEach(c => CODE_HEX[c.code] = c.hex);
+
+const GRAD_PRESETS = [
+  {name:'Sunset',    stops:[{p:0,h:'#ff4500'},{p:.5,h:'#ff9900'},{p:1,h:'#ffdd00'}]},
+  {name:'Ocean',     stops:[{p:0,h:'#0066ff'},{p:1,h:'#00ddcc'}]},
+  {name:'Rose',      stops:[{p:0,h:'#ff0066'},{p:1,h:'#ff99cc'}]},
+  {name:'Forest',    stops:[{p:0,h:'#00aa44'},{p:1,h:'#88ff66'}]},
+  {name:'Galaxy',    stops:[{p:0,h:'#6600cc'},{p:.5,h:'#ff66ff'},{p:1,h:'#0066ff'}]},
+  {name:'Gold',      stops:[{p:0,h:'#ffaa00'},{p:1,h:'#ffe566'}]},
+  {name:'Neon',      stops:[{p:0,h:'#00ffcc'},{p:.5,h:'#ff00ff'},{p:1,h:'#00ccff'}]},
+  {name:'Lava',      stops:[{p:0,h:'#ff0000'},{p:.5,h:'#ff6600'},{p:1,h:'#ffcc00'}]},
+  {name:'Ice',       stops:[{p:0,h:'#aaddff'},{p:1,h:'#ffffff'}]},
+  {name:'Rainbow',   stops:[{p:0,h:'#ff0000'},{p:.17,h:'#ff8800'},{p:.33,h:'#ffff00'},{p:.5,h:'#00ff00'},{p:.67,h:'#00ccff'},{p:.83,h:'#0000ff'},{p:1,h:'#aa00ff'}]},
+];
+
+// ══════════════════════════════════════════════════════════════
+// PARSE & RENDER ENGINE
+// ══════════════════════════════════════════════════════════════
+function parseText(raw) {
+  const segs = [];
+  let st = {color:'#ffffff',bold:false,italic:false,under:false,strike:false,obf:false};
+  let text = raw.replace(/§([0-9a-gk-or])/gi,'&$1');
+
+  // Split on <#hex>...</#hex> gradient regions
+  const parts = [];
+  const gRe = /<(#[0-9a-fA-F]{6})>([\s\S]*?)<\/(#[0-9a-fA-F]{6})>/g;
+  let last=0, m;
+  while((m=gRe.exec(text))!==null){
+    if(m.index>last) parts.push({t:'normal',text:text.slice(last,m.index)});
+    parts.push({t:'grad',text:m[2],from:m[1],to:m[3]});
+    last=gRe.lastIndex;
+  }
+  if(last<text.length) parts.push({t:'normal',text:text.slice(last)});
+
+  for(const part of parts){
+    if(part.t==='grad'){
+      const chars=[...part.text], n=chars.length;
+      for(let i=0;i<n;i++){
+        const c=lerpHex(part.from,part.to,n<=1?0:i/(n-1));
+        segs.push({...st,color:c,text:chars[i]});
+      }
+    } else {
+      const re=/&([0-9a-gk-or])/gi;
+      let cur=0, cm;
+      while((cm=re.exec(part.text))!==null){
+        if(cm.index>cur){const ch=part.text.slice(cur,cm.index);if(ch)segs.push({...st,text:ch});}
+        const c=cm[1].toLowerCase();
+        if(CODE_HEX[c])     st={...st,color:CODE_HEX[c]};
+        else if(c==='k')    st={...st,obf:true};
+        else if(c==='l')    st={...st,bold:true};
+        else if(c==='m')    st={...st,strike:true};
+        else if(c==='n')    st={...st,under:true};
+        else if(c==='o')    st={...st,italic:true};
+        else if(c==='r')    st={color:'#ffffff',bold:false,italic:false,under:false,strike:false,obf:false};
+        cur=cm.index+cm[0].length;
+      }
+      if(cur<part.text.length){const ch=part.text.slice(cur);if(ch)segs.push({...st,text:ch});}
+    }
+  }
+  return segs;
+}
+
+function segsToHtml(segs){
+  return segs.map(s=>{
+    let style=`color:${s.color};`;
+    if(s.bold) style+='font-weight:800;';
+    if(s.italic) style+='font-style:italic;';
+    if(s.under&&s.strike) style+='text-decoration:underline line-through;';
+    else if(s.under) style+='text-decoration:underline;';
+    else if(s.strike) style+='text-decoration:line-through;';
+    const cls=s.obf?' class="mc-obf"':'';
+    return `<span style="${style}"${cls}>${esc(s.text)}</span>`;
+  }).join('');
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function lerpHex(a,b,t){
+  const parse=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  const [ar,ag,ab]=parse(a), [br,bg,bb]=parse(b);
+  const r=Math.round(ar+(br-ar)*t).toString(16).padStart(2,'0');
+  const g=Math.round(ag+(bg-ag)*t).toString(16).padStart(2,'0');
+  const bl=Math.round(ab+(bb-ab)*t).toString(16).padStart(2,'0');
+  return `#${r}${g}${bl}`;
+}
+
+function lerpMulti(stops,t,interp='linear'){
+  // stops: sorted [{p,h}]
+  if(stops.length===1) return stops[0].h;
+  const s=stops.findIndex(s=>s.p>=t);
+  if(s<=0) return stops[0].h;
+  if(s>=stops.length) return stops[stops.length-1].h;
+  const a=stops[s-1], b=stops[s];
+  let u=(t-a.p)/(b.p-a.p);
+  if(interp==='ease') u=u<0.5?2*u*u:-1+(4-2*u)*u;
+  if(interp==='cosine') u=(1-Math.cos(u*Math.PI))/2;
+  return lerpHex(a.h,b.h,u);
+}
+
+// ══════════════════════════════════════════════════════════════
+// TEXT GENERATOR
+// ══════════════════════════════════════════════════════════════
+function updatePreview(){
+  const raw=document.getElementById('mainInput').value;
+  const segs=parseText(raw);
+  const html=segsToHtml(segs);
+  ['prev-chat','prev-sign','prev-motd'].forEach(id=>document.getElementById(id).innerHTML=html);
+  document.getElementById('prev-raw').textContent=raw;
+  document.getElementById('out-section').textContent=raw.replace(/&([0-9a-gk-or])/gi,'§$1');
+  document.getElementById('out-amp').textContent=raw.replace(/§([0-9a-gk-or])/gi,'&$1');
+  document.getElementById('out-dh').textContent=raw.replace(/&([0-9a-gk-or])/gi,'§$1');
+  document.getElementById('out-tellraw').textContent=toTellraw(raw);
+}
+
+function toTellraw(raw){
+  const segs=parseText(raw);
+  const parts=segs.map(s=>{
+    const o={text:s.text};
+    if(s.color&&s.color!=='#ffffff') o.color=s.color;
+    if(s.bold)   o.bold=true;
+    if(s.italic) o.italic=true;
+    if(s.under)  o.underlined=true;
+    if(s.strike) o.strikethrough=true;
+    if(s.obf)    o.obfuscated=true;
+    return o;
+  });
+  return `/tellraw @a ${JSON.stringify(parts)}`;
+}
+
+document.getElementById('mainInput').addEventListener('input',updatePreview);
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p=>{p.classList.remove('active');p.style.display='';});
+    tab.classList.add('active');
+    const pane=document.getElementById(tab.dataset.pane);
+    pane.classList.add('active');
+    pane.style.display='flex';
+  });
+});
+
+// Quick buttons
+function buildQBar(){
+  const qc=document.getElementById('qbar-colors');
+  const qf=document.getElementById('qbar-fmt');
+  MC_COLORS.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='qbtn';
+    b.title=`${c.name} (${c.hex})`;
+    b.onclick=()=>insertAt('&'+c.code);
+    b.innerHTML=`<span class="swatch" style="background:${c.hex}"></span>&amp;${c.code}`;
+    qc.appendChild(b);
+  });
+  MC_FMTS.forEach(f=>{
+    const labels={k:'✦',l:'B',m:'S',n:'U',o:'I',r:'↩'};
+    const b=document.createElement('button');
+    b.className='qbtn';
+    b.title=`${f.name}`;
+    b.onclick=()=>insertAt('&'+f.code);
+    b.innerHTML=`<span style="${f.css};color:var(--text)">${labels[f.code]||f.code}</span> &amp;${f.code}`;
+    qf.appendChild(b);
+  });
+}
+
+function insertAt(code){
+  const ta=document.getElementById('mainInput');
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+code+ta.value.slice(e);
+  ta.setSelectionRange(s+code.length,s+code.length);
+  ta.focus();
+  updatePreview();
+}
+
+// ══════════════════════════════════════════════════════════════
+// GRADIENT DESIGNER
+// ══════════════════════════════════════════════════════════════
+let gradStops = [{p:0,h:'#ff0055'},{p:0.5,h:'#ffcc00'},{p:1,h:'#00ccff'}]; // sorted by p
+let selectedStop = 0;
+let gradInterp = 'linear';
+let gradFmt = '';
+let isDragging = false;
+let dragIdx = -1;
+
+function sortStops(){gradStops.sort((a,b)=>a.p-b.p);}
+
+function renderGradient(){
+  sortStops();
+  const stops=gradStops;
+  const n=200;
+  const parts=[];
+  for(let i=0;i<n;i++){
+    const t=i/(n-1);
+    parts.push(`${lerpMulti(stops,t,gradInterp)} ${(t*100).toFixed(1)}%`);
+  }
+  const css=`linear-gradient(90deg, ${parts.join(',')})`;
+  document.getElementById('gradBarFg').style.background=css;
+
+  // Update stop handles
+  renderStopHandles();
+  // Update big preview
+  renderGradBigPrev();
+  // Update outputs
+  updateGradOutputs();
+}
+
+function renderStopHandles(){
+  const track=document.getElementById('stopTrack');
+  track.innerHTML='';
+  gradStops.forEach((s,i)=>{
+    const h=document.createElement('div');
+    h.className='stop-handle'+(i===selectedStop?' selected':'');
+    h.style.left=`${s.p*100}%`;
+    h.style.background=s.h;
+    h.title=`${s.h} @ ${Math.round(s.p*100)}%`;
+    h.addEventListener('mousedown',e=>{e.preventDefault();startDrag(i,e);});
+    h.addEventListener('touchstart',e=>{e.preventDefault();startDragTouch(i,e);},{passive:false});
+    h.addEventListener('contextmenu',e=>{e.preventDefault();if(gradStops.length>2)removeStop(i);});
+    h.addEventListener('click',()=>{selectStop(i);});
+    track.appendChild(h);
+  });
+  updateStopEditor();
+}
+
+function selectStop(i){
+  selectedStop=Math.max(0,Math.min(i,gradStops.length-1));
+  renderStopHandles();
+}
+
+function updateStopEditor(){
+  const s=gradStops[selectedStop];
+  if(!s){document.getElementById('stopEditor').classList.add('hidden');return;}
+  document.getElementById('stopEditor').classList.remove('hidden');
+  document.getElementById('stopSwatch').style.background=s.h;
+  document.getElementById('stopColorPicker').value=s.h;
+  document.getElementById('stopHexInput').value=s.h.toUpperCase();
+  document.getElementById('stopPosInput').value=Math.round(s.p*100);
+  document.getElementById('stopDelBtn').disabled=gradStops.length<=2;
+  document.getElementById('stopDelBtn').style.opacity=gradStops.length<=2?'.4':'1';
+}
+
+function onPickerChange(val){
+  gradStops[selectedStop].h=val;
+  document.getElementById('stopSwatch').style.background=val;
+  document.getElementById('stopHexInput').value=val.toUpperCase();
+  renderGradient();
+}
+
+function onHexInput(val){
+  const clean=val.replace(/[^0-9a-fA-F#]/g,'');
+  if(/^#[0-9a-fA-F]{6}$/.test(clean)){
+    gradStops[selectedStop].h=clean;
+    document.getElementById('stopColorPicker').value=clean;
+    document.getElementById('stopSwatch').style.background=clean;
+    renderGradient();
+  }
+}
+function onHexBlur(val){
+  let v=val.trim();
+  if(!v.startsWith('#')) v='#'+v;
+  if(/^#[0-9a-fA-F]{6}$/.test(v)){
+    gradStops[selectedStop].h=v;
+    document.getElementById('stopHexInput').value=v.toUpperCase();
+    renderGradient();
+  } else {
+    document.getElementById('stopHexInput').value=gradStops[selectedStop].h.toUpperCase();
+  }
+}
+
+function onPosInput(val){
+  let p=parseFloat(val)/100;
+  p=Math.max(0,Math.min(1,p));
+  if(isNaN(p)) return;
+  gradStops[selectedStop].p=p;
+  renderGradient();
+  // Re-select by color (index might shift after sort)
+  const h=gradStops[selectedStop].h;
+  sortStops();
+  const ni=gradStops.findIndex(s=>s.h===h&&Math.abs(s.p-p)<0.001);
+  if(ni>=0) selectedStop=ni;
+  renderStopHandles();
+}
+
+function deleteSelectedStop(){
+  if(gradStops.length<=2) return;
+  gradStops.splice(selectedStop,1);
+  selectedStop=Math.min(selectedStop,gradStops.length-1);
+  renderGradient();
+}
+
+function removeStop(i){
+  if(gradStops.length<=2) return;
+  gradStops.splice(i,1);
+  selectedStop=Math.min(selectedStop,gradStops.length-1);
+  renderGradient();
+}
+
+// Dragging
+function startDrag(i,e){
+  isDragging=true; dragIdx=i; selectedStop=i;
+  document.addEventListener('mousemove',onDragMove);
+  document.addEventListener('mouseup',onDragEnd);
+  renderStopHandles();
+}
+function startDragTouch(i,e){
+  isDragging=true; dragIdx=i; selectedStop=i;
+  document.addEventListener('touchmove',onDragMoveTouch,{passive:false});
+  document.addEventListener('touchend',onDragEndTouch);
+  renderStopHandles();
+}
+function getBarRect(){return document.getElementById('stopTrack').getBoundingClientRect();}
+function clampP(x,rect){return Math.max(0,Math.min(1,(x-rect.left)/rect.width));}
+function onDragMove(e){
+  if(!isDragging) return;
+  const rect=getBarRect();
+  gradStops[dragIdx].p=clampP(e.clientX,rect);
+  renderGradient();
+}
+function onDragMoveTouch(e){
+  if(!isDragging) return; e.preventDefault();
+  const rect=getBarRect();
+  gradStops[dragIdx].p=clampP(e.touches[0].clientX,rect);
+  renderGradient();
+}
+function onDragEnd(){isDragging=false;document.removeEventListener('mousemove',onDragMove);document.removeEventListener('mouseup',onDragEnd);sortStops();}
+function onDragEndTouch(){isDragging=false;document.removeEventListener('touchmove',onDragMoveTouch);document.removeEventListener('touchend',onDragEndTouch);sortStops();}
+
+// Click bar to add stop
+document.getElementById('gradBar').addEventListener('click',e=>{
+  const rect=document.getElementById('gradBar').getBoundingClientRect();
+  const p=(e.clientX-rect.left)/rect.width;
+  const color=lerpMulti(gradStops,p,gradInterp);
+  gradStops.push({p,h:color});
+  sortStops();
+  selectedStop=gradStops.findIndex(s=>Math.abs(s.p-p)<0.001&&s.h===color);
+  renderGradient();
+});
+
+function setInterp(btn){
+  document.querySelectorAll('#interp-toggle .toggle-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  gradInterp=btn.dataset.val;
+  renderGradient();
+}
+function setGradFmt(btn){
+  document.querySelectorAll('#fmt-toggle .toggle-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  gradFmt=btn.dataset.val;
+  updateGradOutputs();
+  renderGradBigPrev();
+}
+function reverseGradient(){
+  gradStops=gradStops.map(s=>({p:1-s.p,h:s.h})).reverse();
+  sortStops();
+  renderGradient();
+}
+function addRandomStop(){
+  const p=Math.random();
+  const r=()=>Math.floor(Math.random()*256).toString(16).padStart(2,'0');
+  gradStops.push({p,h:`#${r()}${r()}${r()}`});
+  sortStops();
+  selectedStop=gradStops.findIndex(s=>Math.abs(s.p-p)<0.01);
+  renderGradient();
+}
+function resetGradient(){
+  gradStops=[{p:0,h:'#ff0055'},{p:0.5,h:'#ffcc00'},{p:1,h:'#00ccff'}];
+  selectedStop=0; renderGradient();
+}
+
+function renderGradBigPrev(){
+  const text=document.getElementById('gradText').value||'Preview';
+  const chars=[...text];
+  const html=chars.map((ch,i)=>{
+    const t=chars.length<=1?0:i/(chars.length-1);
+    const color=lerpMulti(gradStops,t,gradInterp);
+    let s=`color:${color};font-weight:700;`;
+    if(gradFmt==='&o') s+='font-style:italic;';
+    if(gradFmt==='&n') s+='text-decoration:underline;';
+    return `<span style="${s}">${esc(ch)}</span>`;
+  }).join('');
+  document.getElementById('gradBigPrev').innerHTML=html||'<span style="color:var(--text3)">…</span>';
+}
+
+document.getElementById('gradText').addEventListener('input',()=>{renderGradBigPrev();updateGradOutputs();});
+
+function updateGradOutputs(){
+  const text=document.getElementById('gradText').value||'text';
+  const chars=[...text];
+  const fmt=gradFmt?gradFmt:'';
+
+  // DecentHolograms: chain segments per stop interval
+  let dh='';
+  if(gradStops.length===2){
+    dh=`${fmt}<${gradStops[0].h}>${text}</${gradStops[1].h}>`;
+  } else {
+    // For each consecutive pair of stops, slice the text proportionally
+    const sorted=[...gradStops].sort((a,b)=>a.p-b.p);
+    const totalLen=chars.length;
+    let prevCharIdx=0;
+    for(let i=0;i<sorted.length-1;i++){
+      const frac=(sorted[i+1].p-sorted[i].p);
+      const chunkLen=i===sorted.length-2 ? totalLen-prevCharIdx : Math.max(1,Math.round(frac*totalLen));
+      const chunk=chars.slice(prevCharIdx,prevCharIdx+chunkLen).join('');
+      if(chunk) dh+=`${fmt}<${sorted[i].h}>${chunk}</${sorted[i+1].h}>`;
+      prevCharIdx+=chunkLen;
+    }
+  }
+  document.getElementById('gout-dh').textContent=dh;
+
+  // MiniMessage
+  const sorted=[...gradStops].sort((a,b)=>a.p-b.p);
+  const stopStr=sorted.map(s=>s.h.slice(1)).join(':');
+  const fmtTag=fmt?fmt.replace('&l','<bold>').replace('&o','<italic>').replace('&n','<underlined>'):'';
+  document.getElementById('gout-mm').textContent=`${fmtTag}<gradient:${stopStr}>${text}</gradient>`;
+
+  // §x§R§R§G§G§B§B per character (1.16+)
+  const charOut=chars.map((ch,i)=>{
+    const t=chars.length<=1?0:i/(chars.length-1);
+    const c=lerpMulti(sorted,t,gradInterp);
+    const fmtPrefix=fmt?fmt.replace('&','§'):'';
+    return `§x§${c[1]}§${c[2]}§${c[3]}§${c[4]}§${c[5]}§${c[6]}${fmtPrefix}${ch}`;
+  }).join('');
+  document.getElementById('gout-char').textContent=charOut;
+}
+
+// Preset buttons
+function buildPresets(){
+  const row=document.getElementById('preset-row');
+  GRAD_PRESETS.forEach(pr=>{
+    const btn=document.createElement('button');
+    btn.className='preset-btn';
+    btn.title=pr.name;
+    // Draw gradient on button
+    const sorted=[...pr.stops].sort((a,b)=>a.p-b.p);
+    const css=`linear-gradient(90deg, ${sorted.map(s=>`${s.h} ${(s.p*100).toFixed(0)}%`).join(',')})`;
+    btn.style.background=css;
+    btn.onclick=()=>{
+      gradStops=pr.stops.map(s=>({...s}));
+      selectedStop=0;
+      renderGradient();
+      toast(`Loaded: ${pr.name}`);
+    };
+    // Label
+    const lbl=document.createElement('div');
+    lbl.style.cssText='position:absolute;bottom:0;left:0;right:0;font-size:8px;letter-spacing:1px;text-align:center;background:rgba(0,0,0,.55);padding:2px;color:#fff;font-family:var(--mono);pointer-events:none;';
+    lbl.textContent=pr.name.toUpperCase();
+    btn.style.position='relative';
+    btn.appendChild(lbl);
+    row.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// COLOR + FORMAT REFERENCE
+// ══════════════════════════════════════════════════════════════
+function buildColors(){
+  const grid=document.getElementById('colors-grid');
+  MC_COLORS.forEach(c=>{
+    const card=document.createElement('div');
+    card.className='color-card';
+    card.dataset.name=c.name.toLowerCase()+c.code+c.hex.toLowerCase();
+    card.innerHTML=`
+      <div class="color-swatch" style="background:${c.hex}"></div>
+      <div class="color-info">
+        <div class="color-name" style="color:${c.hex===('#000000')?'#666':c.hex}">${c.name}</div>
+        <div class="code-pills">
+          <span class="pill" title="Insert &amp;${c.code} at cursor" onclick="insertAt('&${c.code}')">&amp;${c.code}</span>
+          <span class="pill" title="Copy §${c.code}" onclick="copyStr('§${c.code}')">§${c.code}</span>
+          <span class="pill" title="Copy hex ${c.hex}" onclick="copyStr('${c.hex}')">${c.hex}</span>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function filterColors(){
+  const q=document.getElementById('colorSearch').value.toLowerCase();
+  document.querySelectorAll('.color-card').forEach(card=>{
+    card.style.display=card.dataset.name.includes(q)?'':'none';
+  });
+}
+
+function buildFmtCards(){
+  const grid=document.getElementById('fmt-grid');
+  MC_FMTS.forEach(f=>{
+    const icons={k:'✦',l:'B',m:'<s>S</s>',n:'<u>U</u>',o:'<i>I</i>',r:'↩'};
+    const card=document.createElement('div');
+    card.className='fmt-card';
+    card.innerHTML=`
+      <div class="fmt-icon"><span style="${f.css};color:#fff">${icons[f.code]||f.code}</span></div>
+      <div class="fmt-info">
+        <div class="fmt-name">${f.name}</div>
+        <div class="code-pills">
+          <span class="pill" onclick="insertAt('&${f.code}')" title="Insert">&amp;${f.code}</span>
+          <span class="pill" onclick="copyStr('§${f.code}')">§${f.code}</span>
+        </div>
+        <div class="fmt-desc">${f.desc}</div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════
+function doCopy(id,btn){
+  const text=document.getElementById(id).textContent;
+  copyStr(text);
+  if(btn){btn.textContent='DONE';btn.classList.add('ok');setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('ok');},1500);}
+}
+
+function copyStr(text){
+  navigator.clipboard.writeText(text).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+  toast('Copied!');
+}
+
+let toastTimer;
+function toast(msg,err){
+  const el=document.getElementById('toast');
+  el.textContent=msg.toUpperCase();
+  el.className=err?'show error':'show';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.className='',1400);
+}
+
+function toggleMenu(){
+  document.getElementById('mobile-nav').classList.toggle('open');
+}
+
+// Nav active state
+const sections=['text-gen','grad-design','color-ref','fmt-ref'];
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY+100;
+  sections.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    const top=el.offsetTop, bot=top+el.offsetHeight;
+    const link=document.querySelector(`a[href="#${id}"]`);
+    if(link){
+      if(y>=top&&y<bot) link.classList.add('active');
+      else link.classList.remove('active');
+    }
+  });
+},{ passive:true });
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+buildQBar();
+buildColors();
+buildFmtCards();
+buildPresets();
+renderGradient();
+
+document.getElementById('mainInput').value='&aHello &bWorld&r &lBold&r &oItalic&r\n<#ff0055>Gradient text</#00ccff>';
+updatePreview();
+</script>
+<input type='hidden' name='ntsp_block_page' value='https://block.canopy.us/?a=block/block1&level=-15&url=http%3A%2F%2Fcdn.discordapp.com%2Fattachments%2F1349521656984375298%2F1512920298276524072%2Fminecraft-color-forge.html%3Fex%3D6a25d853%26is%3D6a2486d3%26hm%3De98d53bb4e748af172839033eedbf0720818e4fffc54f614991f423f0e04a2af%26&user_id=1156256&sigid=0f2d20de945ba2c06543193c22fed827f1cd04800ad56c5962870783e2282278&startm=0&keyword=&referer=&category=65&cause=Quiltingjs'/><input type='hidden' name='ntsp_is_etrog' value='0'/><input type='hidden' name='ntsp_url_category' value='65'/><input type='hidden' name='ntsp_quilting' value='3'/><input type='hidden' name='ntsp_media_level' value='-15'/><input type='hidden' name='ntsp_user_level' value='-15'/><input type='hidden' name='ntsp_url_level' value='5'/><input type='hidden' name='ntsp_block_wa_status' value='0'/><script src='/jsQuilting/server/jsDict_utf8.js?v=1&k=23898278c1850f536d688db3614128a0' type='text/javascript' defer></script></body>
+</html>
