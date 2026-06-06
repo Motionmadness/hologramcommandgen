@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DecentHolograms Command Generator</title>
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --card: #313244;
+            --text: #cdd6f4;
+            --accent: #89b4fa;
+            --delete: #f38ba8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: var(--card);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        h1 { color: var(--accent); text-align: center; margin-bottom: 30px; }
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #45475a;
+            background: #181825;
+            color: white;
+            box-sizing: border-box;
+        }
+        .line-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .line-text { flex-grow: 1; }
+        .color-picker { width: 50px; height: 42px; border: none; cursor: pointer; background: none; }
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+        .btn-add { background-color: var(--accent); color: #11111b; margin-bottom: 20px; }
+        .btn-generate { background-color: #a6e3a1; color: #11111b; width: 100%; font-size: 1.1rem; }
+        .btn-delete { background-color: var(--delete); color: #11111b; padding: 12px; }
+        .output-box {
+            margin-top: 30px;
+            background: #11111b;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            color: #fab387;
+        }
+        .copy-btn { margin-top: 10px; background: #94e2d5; }
+        .help-text { font-size: 0.8rem; color: #9399b2; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>DH Command Generator</h1>
+    
+    <div class="input-group">
+        <label for="holoName">Hologram Name (Internal ID)</label>
+        <input type="text" id="holoName" placeholder="e.g., welcome_holo" value="myHologram">
+    </div>
+
+    <div id="linesContainer">
+        <label>Hologram Lines</label>
+        <!-- Lines will be injected here -->
+    </div>
+
+    <button class="btn btn-add" onclick="addLine()">+ Add Line</button>
+    <button class="btn btn-generate" onclick="generateCommands()">Generate Commands</button>
+
+    <div id="outputArea" style="display:none;">
+        <div class="output-box" id="commandOutput"></div>
+        <button class="btn copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+    </div>
+</div>
+
+<script>
+    let lineCount = 0;
+
+    function addLine(text = "", color = "#ffffff") {
+        lineCount++;
+        const div = document.createElement('div');
+        div.className = 'line-item';
+        div.id = `line-group-${lineCount}`;
+        div.innerHTML = `
+            <input type="color" class="color-picker" value="${color}" id="color-${lineCount}">
+            <input type="text" class="line-text" placeholder="Enter line text..." value="${text}" id="text-${lineCount}">
+            <button class="btn btn-delete" onclick="removeLine(${lineCount})">✕</button>
+        `;
+        document.getElementById('linesContainer').appendChild(div);
+    }
+
+    function removeLine(id) {
+        const line = document.getElementById(`line-group-${id}`);
+        if (document.querySelectorAll('.line-item').length > 1) {
+            line.remove();
+        } else {
+            alert("A hologram must have at least one line!");
+        }
+    }
+
+    function generateCommands() {
+        const name = document.getElementById('holoName').value.trim() || "myHologram";
+        const lineElements = document.querySelectorAll('.line-item');
+        let commands = [];
+
+        lineElements.forEach((el, index) => {
+            const id = el.id.split('-').pop();
+            const text = document.getElementById(`text-${id}`).value;
+            const color = document.getElementById(`color-${id}`).value;
+            
+            // Format hex for DecentHolograms: &#RRGGBB
+            const formattedText = `&#${color.substring(1)}${text}`;
+
+            if (index === 0) {
+                // First command creates the hologram with the first line
+                commands.push(`/dh h create ${name} ${formattedText}`);
+            } else {
+                // Subsequent commands add lines
+                commands.push(`/dh l add ${name} ${formattedText}`);
+            }
+        });
+
+        const outputArea = document.getElementById('outputArea');
+        const commandOutput = document.getElementById('commandOutput');
+        
+        commandOutput.innerText = commands.join('\n');
+        outputArea.style.display = 'block';
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('commandOutput').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Commands copied to clipboard!");
+        });
+    }
+
+    // Initialize with one line
+    addLine("Welcome to the Server!", "#55ff55");
+</script>
+
+</body>
+</html>
